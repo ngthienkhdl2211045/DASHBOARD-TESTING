@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Trang chủ{% endblock %}
+{% block content %}
+<h4 class="mb-4">Tổng quan Dân cư - Kinh tế xã hội</h4>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="text-muted mb-1">Tổng số dân</div>
+            <div class="stat-number">{{ total_residents }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="text-muted mb-1">Nam</div>
+            <div class="stat-number">{{ male_count }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="text-muted mb-1">Nữ</div>
+            <div class="stat-number">{{ female_count }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="chart-card">
+            <h6 class="mb-3">Tỷ lệ giới tính</h6>
+            <canvas id="genderChart" height="220"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="chart-card">
+            <h6 class="mb-3">Phân bố độ tuổi</h6>
+            <canvas id="ageChart" height="220"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="chart-card">
+            <h6 class="mb-3">Nghề nghiệp phổ biến</h6>
+            <canvas id="occupationChart" height="220"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="chart-card">
+            <h6 class="mb-3">Thu nhập bình quân theo năm (triệu đồng)</h6>
+            <canvas id="incomeChart" height="220"></canvas>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="chart-card">
+            <h6 class="mb-3">Tỷ lệ hộ nghèo theo năm (%)</h6>
+            <canvas id="povertyChart" height="120"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+const palette = ['#2563eb', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4'];
+
+fetch('/api/dashboard-data').then(r => r.json()).then(data => {
+    new Chart(document.getElementById('genderChart'), {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(data.gender),
+            datasets: [{ data: Object.values(data.gender), backgroundColor: palette }]
+        }
+    });
+
+    new Chart(document.getElementById('ageChart'), {
+        type: 'bar',
+        data: {
+            labels: Object.keys(data.age_groups),
+            datasets: [{ label: 'Số người', data: Object.values(data.age_groups), backgroundColor: '#2563eb' }]
+        },
+        options: { plugins: { legend: { display: false } } }
+    });
+
+    new Chart(document.getElementById('occupationChart'), {
+        type: 'pie',
+        data: {
+            labels: Object.keys(data.occupation),
+            datasets: [{ data: Object.values(data.occupation), backgroundColor: palette }]
+        }
+    });
+
+    new Chart(document.getElementById('incomeChart'), {
+        type: 'line',
+        data: {
+            labels: data.income.labels,
+            datasets: [{ label: 'Thu nhập bình quân', data: data.income.values, borderColor: '#10b981', tension: 0.3, fill: false }]
+        }
+    });
+
+    new Chart(document.getElementById('povertyChart'), {
+        type: 'bar',
+        data: {
+            labels: data.poverty.labels,
+            datasets: [{ label: 'Tỷ lệ hộ nghèo (%)', data: data.poverty.values, backgroundColor: '#ef4444' }]
+        }
+    });
+});
+</script>
+{% endblock %}

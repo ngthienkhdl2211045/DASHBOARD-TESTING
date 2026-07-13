@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Quản trị{% endblock %}
+{% block content %}
+<h4 class="mb-4">Quản trị hệ thống</h4>
+
+<div class="chart-card">
+    <h6 class="mb-3">Danh sách người dùng</h6>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr><th>Tên đăng nhập</th><th>Họ tên</th><th>Email</th><th>Vai trò</th><th>Ngày tạo</th><th>Hành động</th></tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>{{ u.username }}</td>
+                    <td>{{ u.full_name or '-' }}</td>
+                    <td>{{ u.email or '-' }}</td>
+                    <td>
+                        <span class="badge {{ 'bg-danger' if u.is_admin() else 'bg-secondary' }}">
+                            {{ 'Admin' if u.is_admin() else 'User' }}
+                        </span>
+                    </td>
+                    <td>{{ u.created_at.strftime('%d/%m/%Y') }}</td>
+                    <td class="d-flex gap-1">
+                        <form method="POST" action="{{ url_for('admin.toggle_role', user_id=u.id) }}">
+                            <button class="btn btn-sm btn-outline-primary" {{ 'disabled' if u.id == current_user.id }}>
+                                Đổi quyền
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ url_for('admin.delete_user', user_id=u.id) }}" onsubmit="return confirm('Xóa tài khoản này?');">
+                            <button class="btn btn-sm btn-outline-danger" {{ 'disabled' if u.id == current_user.id }}>
+                                Xóa
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

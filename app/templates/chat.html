@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Chat{% endblock %}
+{% block content %}
+<div class="row g-3" style="height: 75vh;">
+    <div class="col-md-3">
+        <div class="chart-card h-100" style="overflow-y:auto;">
+            <h6 class="mb-3">Người dùng</h6>
+            <ul class="list-unstyled">
+                {% for u in users %}
+                <li class="mb-2">
+                    <a href="{{ url_for('chat.chat_view', user_id=u.id) }}"
+                       class="text-decoration-none d-block p-2 rounded {{ 'bg-primary text-white' if active_user and active_user.id == u.id else 'text-dark' }}">
+                        <i class="bi bi-person-circle"></i> {{ u.full_name or u.username }}
+                    </a>
+                </li>
+                {% else %}
+                <li class="text-muted">Chưa có người dùng khác.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="chart-card h-100 d-flex flex-column">
+            {% if active_user %}
+            <h6 class="mb-3">Trò chuyện với {{ active_user.full_name or active_user.username }}</h6>
+            <div id="messageList" class="flex-grow-1 mb-3" style="overflow-y:auto;">
+                {% for m in messages %}
+                <div class="mb-2 {{ 'text-end' if m.sender_id == current_user.id }}">
+                    <span class="badge {{ 'bg-primary' if m.sender_id == current_user.id else 'bg-secondary' }} p-2">
+                        {{ m.content }}
+                    </span>
+                    <div class="text-muted" style="font-size: 0.7rem;">{{ m.timestamp.strftime('%H:%M %d/%m') }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            <form method="POST" action="{{ url_for('chat.send_message', user_id=active_user.id) }}" class="d-flex gap-2">
+                <input type="text" name="content" class="form-control" placeholder="Nhập tin nhắn..." required autocomplete="off">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-send"></i></button>
+            </form>
+            {% else %}
+            <div class="text-center text-muted m-auto">
+                <i class="bi bi-chat-dots" style="font-size: 3rem;"></i>
+                <p class="mt-2">Chọn một người dùng để bắt đầu trò chuyện</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if active_user %}
+<script>
+// Tự động cuộn xuống tin nhắn mới nhất
+const list = document.getElementById('messageList');
+if (list) list.scrollTop = list.scrollHeight;
+
+// Polling đơn giản để cập nhật tin nhắn mới mỗi 5 giây
+setInterval(() => {
+    fetch('/api/chat/{{ active_user.id }}/poll')
+        .then(r => r.json())
+        .then(data => {
+            const currentCount = list.children.length;
+            if (data.length !== currentCount) {
+                location.reload();
+            }
+        });
+}, 5000);
+</script>
+{% endif %}
+{% endblock %}

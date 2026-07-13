@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Tài khoản{% endblock %}
+{% block content %}
+<h4 class="mb-4">Thông tin tài khoản</h4>
+
+<div class="chart-card" style="max-width: 520px;">
+    <form method="POST">
+        <div class="mb-3">
+            <label class="form-label">Tên đăng nhập</label>
+            <input type="text" class="form-control" value="{{ current_user.username }}" disabled>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Vai trò</label>
+            <input type="text" class="form-control" value="{{ 'Quản trị viên' if current_user.is_admin() else 'Người dùng' }}" disabled>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Họ và tên</label>
+            <input type="text" name="full_name" class="form-control" value="{{ current_user.full_name or '' }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" value="{{ current_user.email or '' }}">
+        </div>
+        <hr>
+        <p class="text-muted small">Để trống nếu không muốn đổi mật khẩu</p>
+        <div class="mb-3">
+            <label class="form-label">Mật khẩu mới</label>
+            <input type="password" name="new_password" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Xác nhận mật khẩu mới</label>
+            <input type="password" name="confirm_password" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+    </form>
+</div>
+{% endblock %}
